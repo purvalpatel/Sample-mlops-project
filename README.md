@@ -16,15 +16,15 @@ Importance of MLOps:
 
 MLops Core practices:
 1. Version everything
-    a. Code, data, models, configs
-2. Automate pipelines ( with same tools )
-    a) Training, testing, deployment
-3. Track experiaments
-    a) Parameters, mertics, artifacts
-4. Monitor  ( this is different from others)
-    a) Performance
-5. Enable Governance
-    a) Documentation and compliance.
+    - Code, data, models, configs
+3. Automate pipelines ( with same tools )
+    - Training, testing, deployment
+4. Track experiaments
+    - Parameters, mertics, artifacts
+5. Monitor  ( this is different from others)
+    - Performance
+6. Enable Governance
+    - Documentation and compliance.
 
 Life cycle of ML Project:
 
