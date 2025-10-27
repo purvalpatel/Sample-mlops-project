@@ -1,39 +1,43 @@
 name: MLops CI
 
+## workflow_dispatch means workflows run manually from github actions web UI.
+## you can run by click run workflow.
 on:
   workflow_dispatch: {}
   
 jobs:
   e2e_mlops_workflow:
+    # take base image
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2    # this will provide access to your repository files.
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11.5'
+          python-version: '3.11.5'  # install python 3.11 environment in your container.
 
       - name: Install dependencies
-        run: |
+        run: |          # Setup all dependencies.
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Data Processing
+      - name: Run Data Processing    ## Run data processing script
         run: |
           python src/data/run_processing.py \
             --input data/raw/house_data.csv \
             --output data/processed/cleaned_house_data.csv
 
-      - name: Do Feature Engineering
+      - name: Do Feature Engineering    ## Run feature engineering script
         run: |
           python src/features/engineer.py  \
            --input data/processed/cleaned_house_data.csv \
            --output data/processed/featured_house_data.csv \
            --preprocessor models/trained/preprocessor.pkl
            
-      - name: Setup MLflow
+      - name: Setup MLflow          ## Setup MLFlow here, because it will not connect with our existing MLflow. this is added tempararily to track experiaments. even it is temparary. the same code works in production as well.
+                                    ## for production, provide production mlflow URL.
         run: |
           docker pull ghcr.io/mlflow/mlflow:latest
           docker run -d -p 5555:5000 --name mlflow-server ghcr.io/mlflow/mlflow:latest \
@@ -41,7 +45,7 @@ jobs:
             --backend-store-uri sqlite:///mlflow.db \
             --default-artifact-root /tmp/mlruns
 
-      - name: Train the Model
+      - name: Train the Model    ## start model train code 
         run: |
           python src/models/train_model.py \
           --config configs/model_config.yaml \
@@ -50,22 +54,22 @@ jobs:
           --mlflow-tracking-uri http://localhost:5555
 
            
-      - name: Cleaning up  MLflow
+      - name: Cleaning up  MLflow    ## once done, clear mlflow
         run: |
           docker stop mlflow-server
           docker rm mlflow-server
           docker rmi ghcr.io/mlflow/mlflow:latest
 
-      - name: Login to Docker Hub
+      - name: Login to Docker Hub    ## now login docker hub to store image on docker hub
         uses: docker/login-action@v3
         with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
+          username: ${{ vars.DOCKERHUB_USERNAME }}  ## this variables stored in runners variables.
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Set up Docker Buildx
+      - name: Set up Docker Buildx    # Advanced builder that supports multi platform builds.
         uses: docker/setup-buildx-action@v3
  
-      - name: Build and push
+      - name: Build and push      ## push the image on docker hub with provided tags.
         uses: docker/build-push-action@v6
         with:
           push: true
