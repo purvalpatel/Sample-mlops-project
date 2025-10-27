@@ -179,3 +179,4 @@ This is CI pipeline. Now we have image. Now we go for the deployment in kubernet
 
 # CD Pipeline
 ---------------
+For Deployment we are using kubernetes so we can scale.
