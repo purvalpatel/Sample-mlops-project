@@ -1,7 +1,7 @@
 # .github/workflows/mlops-pipeline.yml
 name: MLOps Pipeline
 
-on:
+on:      ## this job exection started when code is pushed on github projects main branch.
   push:
     branches: [ main ]
     tags: [ 'v*.*.*' ]
@@ -33,13 +33,15 @@ jobs:
     - name: Engineer features
       run: |
         python src/features/engineer.py --input data/processed/cleaned_house_data.csv --output data/processed/featured_house_data.csv --preprocessor models/trained/preprocessor.pkl
-        
+
+      ## the .csv which generated in this project is not used in next stage. this step is used to store the artifacts.so we can use in next stage.
     - name: Upload processed data
       uses: actions/upload-artifact@v4
       with:
         name: processed-data
         path: data/processed/featured_house_data.csv
-        
+
+      ## The .csv store temparary.
     - name: Upload preprocessor
       uses: actions/upload-artifact@v4
       with:
@@ -85,7 +87,8 @@ jobs:
       run: |
         mkdir -p models
         python src/models/train_model.py --config configs/model_config.yaml --data data/processed/featured_house_data.csv --models-dir models --mlflow-tracking-uri http://localhost:5000
-        
+
+      # used to train model.
     - name: Upload trained model
       uses: actions/upload-artifact@v4
       with:
