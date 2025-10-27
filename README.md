@@ -171,8 +171,11 @@ curl -X POST "http://localhost:8000/predict" \
 
 Be sure to replace `http://localhost:8000/predict` with actual endpoint based on where its running. 
 
-# Github Actions pipeline
+# Github Actions pipeline ( CI Pipeline )
 ---------------------------
 
----
 
+This is CI pipeline. Now we have image. Now we go for the deployment in kubernetes. lets go to the deployment stage.
+
+# CD Pipeline
+---------------
