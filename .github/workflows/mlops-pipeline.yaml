@@ -1,7 +1,8 @@
 # .github/workflows/mlops-pipeline.yml
 name: MLOps Pipeline
 
-on:      ## this job exection started when code is pushed on github projects main branch.
+## Job Execution started automatically when code pushed to main branch.
+on:      
   push:
     branches: [ main ]
     tags: [ 'v*.*.*' ]
@@ -13,23 +14,28 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+      ## Fetches repository content in runner.
     - name: Checkout code
       uses: actions/checkout@v2
-      
+
+      ## Setup python environment.
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: '3.11.9'
         
+      ## install python dependencies into container.
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        
+
+      ## Process data.
     - name: Process data
       run: |
         python src/data/run_processing.py --input data/raw/house_data.csv --output data/processed/cleaned_house_data.csv 
-        
+
+      ## Feature engineering
     - name: Engineer features
       run: |
         python src/features/engineer.py --input data/processed/cleaned_house_data.csv --output data/processed/featured_house_data.csv --preprocessor models/trained/preprocessor.pkl
@@ -41,7 +47,7 @@ jobs:
         name: processed-data
         path: data/processed/featured_house_data.csv
 
-      ## The .csv store temparary.
+      ## The .csv store temparary so it can be used in next stage.
     - name: Upload preprocessor
       uses: actions/upload-artifact@v4
       with:
@@ -49,71 +55,85 @@ jobs:
         path: models/trained/preprocessor.pkl
         
   model-training:
+    ## this job is depends on data-processing job
     needs: data-processing
     runs-on: ubuntu-latest
     
     steps:
+    ## repository code is used in runner.
     - name: Checkout code
       uses: actions/checkout@v2
-      
+
+      ## setup python environment.
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: '3.11.9'
-        
+
+      ## install dependencies
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        
+
+      ## Now will download the artifacts which is uploaded in first stage.
     - name: Download processed data
       uses: actions/download-artifact@v4
       with:
         name: processed-data
         path: data/processed/
-        
+
+      # setup MLFlow temparary
     - name: Set up MLflow
       run: |
         docker pull ghcr.io/mlflow/mlflow:latest
         docker run -d -p 5000:5000 --name mlflow-server ghcr.io/mlflow/mlflow:latest mlflow server --host 0.0.0.0 --backend-store-uri sqlite:///mlflow.db
-        
+
+      ## Wait for MLFlow to start completely.
     - name: Wait for MLflow to start
       run: |
         for i in {1..10}; do
           curl -f http://localhost:5000/health || sleep 5;
         done
-        
+
+      ## Once MLFlow is started start model training.
     - name: Train model
       run: |
         mkdir -p models
         python src/models/train_model.py --config configs/model_config.yaml --data data/processed/featured_house_data.csv --models-dir models --mlflow-tracking-uri http://localhost:5000
 
-      # used to train model.
+      # used to train model artifactory.
     - name: Upload trained model
       uses: actions/upload-artifact@v4
       with:
         name: trained-model
         path: models/
-        
+
+      ## cleanup MLFlow.
     - name: Clean up MLflow
       run: |
         docker stop mlflow-server || true
         docker rm mlflow-server || true
-        
+
+    # Now its tim to build and publish the applicatin.
   build-and-publish:
+   # this stage is depends on model-training stage.
     needs: model-training
     runs-on: ubuntu-latest
     
     steps:
+    ## allow repo code to be used in runner.
     - name: Checkout code
       uses: actions/checkout@v2
-      
+
+      ## Download the artifacts which is uploaded in previuous stage.
     - name: Download trained model
       uses: actions/download-artifact@v4
       with:
         name: trained-model
         path: models/
-        
+
+      ## Download pre-processor pkl file which is uploaded in previous stage.
     - name: Download preprocessor
       uses: actions/download-artifact@v4
       with:
