@@ -16,7 +16,7 @@ Importance of MLOps:
 
 MLops Core practices:
 1. Version everything
-    a) Code, data, models, configs
+    a. Code, data, models, configs
 2. Automate pipelines ( with same tools )
     a) Training, testing, deployment
 3. Track experiaments
