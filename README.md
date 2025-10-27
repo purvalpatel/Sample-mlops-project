@@ -40,13 +40,13 @@ To begin, ensure the following tools are installed on your system:
 ---
 Cross-functional team approch:
 -----------------------------
-1.Data engineers		
+1. Data engineers		
 - Prepare data infrastructure
-2.Data scientists		
+2. Data scientists		
 - explore and prototypes - build models.
-3.ML Engineers		
+3. ML Engineers		
 - productionize the model - containerize model service, inference cod. Bridging gap between research and production.
-4.MLops engineers	
+4. MLops engineers	
 - automate, deploy, monitor, maintain
 
 ## 🚀 Preparing Your Environment
