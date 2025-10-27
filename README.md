@@ -29,3 +29,11 @@ MLops Core practices:
 Life cycle of ML Project:
 
 Data -> Model -> Inference (Production) -> Monitoring -> re-training
+
+ML Lifecycle vs. Software developement lifecycle.
+
+Traditional software:
+Requirement -> Design -> Implementation -> Testing -> Developement -> MAintainance
+
+ML Developement:
+Problem framing -> Data preparation -> Feature engineering -> Training -> Evaluation -> Deployment -> Monitoring
